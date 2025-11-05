@@ -1,0 +1,12 @@
+[install]
+frozen-lockfile = false
+
+[install.cache]
+disable = false
+
+[module]
+preload = ["./src/tracing.ts"]
+
+[loader]
+".ts" = "ts"
+".tsx" = "tsx"
