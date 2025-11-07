@@ -1,10 +1,15 @@
 import { Elysia } from 'elysia'
 import { CouldNotCreateError } from '@/domain/errors/could-not-create'
+import { NotFoundError } from '@/domain/errors/not-found'
 
 export const errorHandler = new Elysia({ name: 'error-handler' }).onError(
   ({ error, status }) => {
     if (error instanceof CouldNotCreateError) {
       return status(400, { error: 'Could not create', message: error.message })
+    }
+
+    if (error instanceof NotFoundError) {
+      return status(404, { error: 'Not found', message: error.message })
     }
 
     return status(500, {
