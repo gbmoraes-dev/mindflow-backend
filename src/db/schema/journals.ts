@@ -26,7 +26,7 @@ export const journals = pgTable('journals', {
   content: text().notNull(),
   analysisStatus: analysisStatusEnum().default('pending').notNull(),
   aiAnalysis: jsonb(),
-  createAt: timestamp()
+  createdAt: timestamp()
     .$defaultFn(() => new Date())
     .notNull(),
   updatedAt: timestamp()
