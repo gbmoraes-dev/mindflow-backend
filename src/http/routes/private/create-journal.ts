@@ -26,19 +26,20 @@ export const createJournal = new Elysia().use(betterAuthPlugin).post(
 
     const journal = unwrapOrThrow(result)
 
-    return status(201, journal)
+    return status(202, journal)
   },
   {
     auth: true,
     detail: {
       tags: ['journal'],
-      summary: 'Create a new journal entry',
-      description: 'Create a new journal entry for the authenticated user',
+      summary: 'Create and queue a new journal entry',
+      description:
+        'Create and queue a new journal entry for the authenticated user',
       operationId: 'createJournal',
     },
     body: createJournalSchema,
     response: {
-      201: createJournalResponse,
+      202: createJournalResponse,
       400: z.object({ error: z.string(), message: z.string() }),
     },
   },
