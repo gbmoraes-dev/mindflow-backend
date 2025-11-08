@@ -1,5 +1,6 @@
 import { openapi } from '@elysiajs/openapi'
 import { Elysia } from 'elysia'
+import { z } from 'zod/v4'
 import { BetterAuthOpenAPI } from './better-auth'
 
 const [authPaths, authComponents] = await Promise.all([
@@ -27,6 +28,9 @@ export const openapiPlugin = new Elysia({ name: 'openapi' }).use(
       ],
       paths: authPaths,
       components: authComponents,
+    },
+    mapJsonSchema: {
+      zod: z.toJSONSchema,
     },
   }),
 )
