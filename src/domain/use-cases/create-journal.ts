@@ -1,4 +1,5 @@
 import { err, ok } from 'neverthrow'
+import { dispatchJournalCreated } from '@/broker/messages/journal-created'
 import { db } from '@/db'
 import { schema } from '@/db/schema'
 import { CouldNotCreateError } from '../errors/could-not-create'
@@ -19,6 +20,16 @@ export const createJournalUseCase = async ({
 
   if (!journal) {
     return err(new CouldNotCreateError('Failed to create journal.'))
+  }
+
+  const queued = dispatchJournalCreated({
+    journalId: journal.id,
+    userId,
+    content,
+  })
+
+  if (queued.isErr()) {
+    return err(queued.error)
   }
 
   return ok(journal)
