@@ -9,6 +9,8 @@ const envSchema = z.object({
   ORIGIN: z.url(),
   DATABASE_URL: z.url().startsWith('postgresql://'),
   REDIS_URL: z.url().startsWith('redis://'),
+  BROKER_URL: z.url().startsWith('amqp://'),
+  OPENAI_API_KEY: z.string(),
   GOOGLE_CLIENT_ID: z.string(),
   GOOGLE_CLIENT_SECRET: z.string(),
   GITHUB_CLIENT_ID: z.string(),
