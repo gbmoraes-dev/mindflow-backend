@@ -22,15 +22,11 @@ export const createJournalUseCase = async ({
     return err(new CouldNotCreateError('Failed to create journal.'))
   }
 
-  const queued = dispatchJournalCreated({
+  dispatchJournalCreated({
     journalId: journal.id,
     userId,
     content,
   })
-
-  if (queued.isErr()) {
-    return err(queued.error)
-  }
 
   return ok(journal)
 }
