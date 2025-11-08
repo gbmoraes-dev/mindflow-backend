@@ -3,7 +3,7 @@ import { generateText } from 'ai'
 import { redis } from 'bun'
 import { eq } from 'drizzle-orm'
 import { channels } from '@/broker/channels'
-import type { JournalCreatedMessage } from '@/contracts/messages/journal-created-message'
+import type { JournalCreatedMessage } from '@/domain/contracts/messages/journal-created-message'
 import { db } from '@/db'
 import { schema } from '@/db/schema'
 
@@ -62,7 +62,7 @@ channels.journals.consume(
         })
         .where(eq(schema.journals.id, journalId))
 
-      const channel = `user:${userId}`
+      const channel = `journal:${journalId}:completed`
 
       const notification = JSON.stringify({
         event: 'analysis_completed',
