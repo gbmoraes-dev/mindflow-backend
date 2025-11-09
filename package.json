@@ -5,6 +5,7 @@
   "module": "src/http/server.ts",
   "scripts": {
     "dev": "bun run --watch src/http/server.ts",
+    "worker": "bun run --watch src/worker/subscriber.ts",
     "build": "bun build --compile --external pg --minify-whitespace --minify-syntax --target bun --outfile server src/http/server.ts",
     "start": "./server",
     "pretest": "bun --env-file .env.test --bun drizzle-kit migrate",
