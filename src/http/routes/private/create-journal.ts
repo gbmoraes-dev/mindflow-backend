@@ -5,12 +5,16 @@ import { journals } from '@/db/schema/journals'
 import { createJournalUseCase } from '@/domain/use-cases/create-journal'
 import { betterAuthPlugin } from '@/http/plugins/better-auth'
 import { unwrapOrThrow } from '@/shared/result'
+import { serializeJournal } from '@/shared/serializer'
 
 const createJournalSchema = z.object({
   content: z.string().min(1).max(1000),
 })
 
-const createJournalResponse = createSelectSchema(journals).extend({
+const createJournalResponse = createSelectSchema(journals, {
+  createdAt: z.coerce.string(),
+  updatedAt: z.coerce.string(),
+}).extend({
   aiAnalysis: z.unknown().nullable().optional(),
 })
 
@@ -26,7 +30,7 @@ export const createJournal = new Elysia().use(betterAuthPlugin).post(
 
     const journal = unwrapOrThrow(result)
 
-    return status(202, journal)
+    return status(202, serializeJournal(journal))
   },
   {
     auth: true,

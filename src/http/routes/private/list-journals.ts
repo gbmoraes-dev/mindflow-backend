@@ -5,9 +5,13 @@ import { journals } from '@/db/schema/journals'
 import { listJournalsUseCase } from '@/domain/use-cases/list-journals'
 import { betterAuthPlugin } from '@/http/plugins/better-auth'
 import { unwrapOrThrow } from '@/shared/result'
+import { serializeJournals } from '@/shared/serializer'
 
 const listJournalsResponse = z.array(
-  createSelectSchema(journals).extend({
+  createSelectSchema(journals, {
+    createdAt: z.coerce.string(),
+    updatedAt: z.coerce.string(),
+  }).extend({
     aiAnalysis: z.unknown().nullable().optional(),
   }),
 )
@@ -21,7 +25,7 @@ export const listJournals = new Elysia().use(betterAuthPlugin).get(
 
     const journals = unwrapOrThrow(result)
 
-    return status(200, journals)
+    return status(200, serializeJournals(journals))
   },
   {
     auth: true,
