@@ -1,6 +1,7 @@
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { openAPI } from 'better-auth/plugins'
+import { redis } from 'bun'
 import { db } from './db'
 import { env } from './env'
 
@@ -40,6 +41,21 @@ export const auth = betterAuth({
     cookieCache: {
       enabled: true,
       maxAge: 60 * 5, // 5 minutes
+    },
+  },
+  secondaryStorage: {
+    get: async (key: string) => {
+      return await redis.get(key)
+    },
+    set: async (key: string, value: string, ttl?: number) => {
+      await redis.set(key, value)
+
+      if (ttl) {
+        await redis.expire(key, ttl)
+      }
+    },
+    delete: async (key: string) => {
+      await redis.del(key)
     },
   },
 })
