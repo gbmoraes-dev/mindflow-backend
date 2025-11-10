@@ -6,6 +6,7 @@ import { env } from './env'
 
 export const auth = betterAuth({
   basePath: '/auth',
+  trustedOrigins: [env.ORIGIN],
   plugins: [openAPI()],
   database: drizzleAdapter(db, {
     provider: 'pg',
