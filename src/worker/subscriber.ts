@@ -3,9 +3,9 @@ import { generateText } from 'ai'
 import { redis } from 'bun'
 import { eq } from 'drizzle-orm'
 import { channels } from '@/broker/channels'
-import type { JournalCreatedMessage } from '@/domain/contracts/messages/journal-created-message'
 import { db } from '@/db'
 import { schema } from '@/db/schema'
+import type { JournalCreatedMessage } from '@/domain/contracts/messages/journal-created-message'
 
 channels.journals.consume(
   'journals',
@@ -37,13 +37,15 @@ channels.journals.consume(
       {
         "sentiment": "string",
         "topics": ["string"],
-        "summary": "string"
+        "summary": "string",
+        "suggestion": "string"
       }
 
       Instruções para os campos:
       1.  "sentiment": Classifique o sentimento geral da entrada. Deve ser um dos seguintes valores: "positivo", "negativo", "neutro" ou "misto".
       2.  "topics": Identifique os 2 ou 3 tópicos principais discutidos. Retorne um array de strings (ex: ["trabalho", "ansiedade", "família"]). Se nenhum tópico claro for encontrado, retorne um array vazio [].
       3.  "summary": Escreva um resumo muito curto (máximo de 1-2 frases) em português, capturando a essência da entrada.
+      4.  "suggestion": Com base no sentimento e nos tópicos, forneça um conselho gentil e acionável. Se o sentimento for "positivo", reforce o comportamento. Se for "negativo" ou "misto", ofereça uma sugestão de bem-estar ou uma perspectiva reflexiva que faça sentido com o que o usuário disse. Lembre-se, isso não é conselho médico, mas sim um apoio empático.
       `
 
       const { text } = await generateText({
