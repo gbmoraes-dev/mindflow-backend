@@ -62,7 +62,6 @@ docs/
 *.db
 *.sqlite
 *.sqlite3
-src/db/migrations/*.sql
 
 # temporary files
 tmp/
@@ -83,7 +82,6 @@ temp/
 azure-pipelines.yml
 
 # drizzle
-drizzle.config.ts
 .drizzle/
 
 # biome
