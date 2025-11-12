@@ -12,7 +12,11 @@ COPY . .
 
 RUN bun build --compile --external pg --minify-whitespace --minify-syntax --target bun --outfile server src/http/server.ts
 
-FROM gcr.io/distroless/base:nonroot AS release
+RUN bun build --compile --external pg --minify-whitespace --minify-syntax --target bun --outfile worker src/worker/subscriber.ts
+
+RUN bun install --production --no-save
+
+FROM gcr.io/distroless/base:nonroot AS release-api
 
 ENV NODE_ENV=production
 
@@ -20,6 +24,20 @@ WORKDIR /usr/src/app
 
 COPY --from=builder /usr/src/app/server .
 
-EXPOSE 3000
+COPY --from=builder /usr/src/app/node_modules ./node_modules
+
+EXPOSE 3333
 
 ENTRYPOINT ["/usr/src/app/server"]
+
+FROM gcr.io/distroless/base:nonroot AS release-worker
+
+ENV NODE_ENV=production
+
+WORKDIR /usr/src/app
+
+COPY --from=builder /usr/src/app/worker .
+
+COPY --from=builder /usr/src/app/node_modules ./node_modules
+
+ENTRYPOINT ["/usr/src/app/worker"]

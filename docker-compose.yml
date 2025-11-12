@@ -1,4 +1,46 @@
 services:
+  api:
+    image: mindflow-api
+    container_name: mindflow_api
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: release-api
+    env_file:
+      - .env
+    ports:
+      - "3333:3333"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      broker:
+        condition: service_healthy
+    networks:
+      - mindflow-net
+
+  worker:
+    image: mindflow-worker
+    container_name: mindflow_worker
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: release-worker
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      broker:
+        condition: service_healthy
+    networks:
+      - mindflow-net
+
   postgres:
     image: postgres:17
     container_name: mindflow_database
@@ -11,6 +53,8 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mindflow-net
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U dev -d mindflow"]
       interval: 10s
@@ -23,6 +67,8 @@ services:
     restart: unless-stopped
     ports:
       - "6379:6379"
+    networks:
+      - mindflow-net
     healthcheck:
       test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
       interval: 10s
@@ -38,11 +84,17 @@ services:
       - "15672:15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - mindflow-net
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
+
+networks:
+  mindflow-net:
+    driver: bridge
 
 volumes:
   postgres_data:
