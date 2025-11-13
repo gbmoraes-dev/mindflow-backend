@@ -1,4 +1,20 @@
 services:
+  migrate:
+    image: mindflow-migrate
+    container_name: mindflow_migrate
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: migrate
+    command: bun --bun drizzle-kit migrate
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - mindflow-net
+
   api:
     image: mindflow-api
     container_name: mindflow_api
@@ -56,7 +72,7 @@ services:
     networks:
       - mindflow-net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dev -d mindflow"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d mindflow"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -70,7 +86,7 @@ services:
     networks:
       - mindflow-net
     healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
