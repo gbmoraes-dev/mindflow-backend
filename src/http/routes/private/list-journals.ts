@@ -7,34 +7,55 @@ import { betterAuthPlugin } from '@/http/plugins/better-auth'
 import { unwrapOrThrow } from '@/shared/result'
 import { serializeJournals } from '@/shared/serializer'
 
-const listJournalsResponse = z.array(
-  createSelectSchema(journals, {
-    createdAt: z.coerce.string(),
-    updatedAt: z.coerce.string(),
-  }).extend({
-    aiAnalysis: z.unknown().nullable().optional(),
-  }),
-)
+const listJournalsQuery = z.object({
+  limit: z.coerce.number().min(1).max(100).default(20),
+  cursor: z.string().optional(),
+})
+
+const journalItemSchema = createSelectSchema(journals, {
+  createdAt: z.coerce.string(),
+})
+  .pick({
+    id: true,
+    createdAt: true,
+  })
+  .extend({
+    sentiment: z.string(),
+  })
+
+const listJournalsResponse = z.object({
+  journals: z.array(journalItemSchema),
+  nextCursor: z.string().nullable(),
+})
 
 export const listJournals = new Elysia().use(betterAuthPlugin).get(
   '/journal',
-  async ({ user, status }) => {
+  async ({ user, query, status }) => {
+    const { limit, cursor } = query
+
     const result = await listJournalsUseCase({
       userId: user.id,
+      cursor,
+      limit,
     })
 
-    const journals = unwrapOrThrow(result)
+    const data = unwrapOrThrow(result)
 
-    return status(200, serializeJournals(journals))
+    return status(200, {
+      journals: serializeJournals(data.journals),
+      nextCursor: data.nextCursor,
+    })
   },
   {
     auth: true,
     detail: {
       tags: ['journal'],
-      summary: 'List a journal entries',
-      description: 'List all journal entries for the authenticated user',
+      summary: 'List a journals (paginated)',
+      description:
+        'List all journal entries for the authenticated user using cursor pagination.',
       operationId: 'listJournals',
     },
+    query: listJournalsQuery,
     response: {
       200: listJournalsResponse,
     },
