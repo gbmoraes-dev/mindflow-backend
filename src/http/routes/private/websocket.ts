@@ -18,11 +18,15 @@ export const websocket = new Elysia()
       const subscriber = new RedisClient(env.REDIS_URL)
 
       await subscriber.subscribe(channel, async (message) => {
-        ws.send(message)
+        const parsedMessage = JSON.parse(message)
 
-        if (message.includes('completed')) {
+        ws.send(JSON.stringify(parsedMessage))
+
+        if (parsedMessage.event === 'analysis_completed') {
+          await new Promise((resolve) => setTimeout(resolve, 100))
+
           await subscriber.unsubscribe(channel)
-          ws.close()
+          ws.close(1000, 'Analysis completed')
         }
       })
 
