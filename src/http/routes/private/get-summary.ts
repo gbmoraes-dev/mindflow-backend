@@ -5,12 +5,14 @@ import { betterAuthPlugin } from '@/http/plugins/better-auth'
 import { unwrapOrThrow } from '@/shared/result'
 
 const getSummarySchema = z.object({
-  period: z.enum(['7d', '30d']).default('7d'),
+  period: z.enum(['7d', '30d', '90d']).default('7d'),
 })
 
-const sentimentTrendSchema = z.object({
-  sentiment: z.string(),
-  count: z.number().or(z.string().pipe(z.coerce.number())),
+const sentimentHistorySchema = z.object({
+  date: z.string(),
+  positive: z.number().or(z.string().pipe(z.coerce.number())),
+  negative: z.number().or(z.string().pipe(z.coerce.number())),
+  neutral: z.number().or(z.string().pipe(z.coerce.number())),
 })
 
 const recurringTopicSchema = z.object({
@@ -19,7 +21,7 @@ const recurringTopicSchema = z.object({
 })
 
 const summaryResponseSchema = z.object({
-  sentimentTrend: z.array(sentimentTrendSchema),
+  sentimentHistory: z.array(sentimentHistorySchema),
   recurringTopics: z.array(recurringTopicSchema),
 })
 
@@ -28,7 +30,7 @@ export const getSummary = new Elysia().use(betterAuthPlugin).get(
   async ({ query, user, status }) => {
     const { period } = query
 
-    const periodDays = period === '7d' ? 7 : 30
+    const periodDays = period === '7d' ? 7 : period === '30d' ? 30 : 90
 
     const result = await getJournalsSummaryUseCase({
       userId: user.id,
